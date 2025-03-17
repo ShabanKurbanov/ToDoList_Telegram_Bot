@@ -1,10 +1,11 @@
 ﻿using System.Reflection;
+using ToDoList_Telegram_Bot;
 namespace TGBot
 {
 	internal class Program
 	{
 		private static bool flag = true;
-
+		private static string commandStart = "Пожалуйста, введите команду /start!";
 		static void Main(string[] args)
 		{
 			UserClass instance = new UserClass();
@@ -13,17 +14,41 @@ namespace TGBot
 
 			while (flag)
 			{
-				string command = Console.ReadLine();
-				if (command != null && command != string.Empty && command == "/start")
+				try
 				{
-					instance.CommandHandler();
-					flag = false;
+					string command = Console.ReadLine();
+					if (command != null && command != string.Empty && command == "/start")
+					{
+						instance.CommandHandler();
+						flag = false;
+					}
+					else
+					{
+						Console.WriteLine(commandStart);
+					}
 				}
-				else
+				catch (ArgumentException e)
 				{
-					Console.WriteLine("Пожалуйста, введите команду!");
+					Console.WriteLine(e.Message);
+					Console.WriteLine(commandStart);
 				}
 
+				catch(TaskCountLimitException e)
+				{
+					Console.WriteLine(e.Message);
+					Console.WriteLine(commandStart);
+				}
+				catch (TaskLengthLimitExeption e)
+				{
+					Console.WriteLine(e.Message);
+					Console.WriteLine(commandStart);
+				}
+				catch(DuplicateTaskException e)
+				{
+					Console.WriteLine(e.Message);
+					Console.WriteLine(commandStart);
+				}
+				
 			}
 		}
 	}

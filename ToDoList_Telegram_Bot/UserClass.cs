@@ -4,6 +4,7 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
+using ToDoList_Telegram_Bot;
 
 namespace TGBot
 {
@@ -12,9 +13,11 @@ namespace TGBot
 		private bool _flag = true;
 		private string _firstName = string.Empty;
 		private string _listCommand = "/addtask, /showtasks, /removetask, /edittask, /taskcompleted, /showcompleted, /info, /help, /echo, /exit";
-		List<string> _listTask = new List<string>() { "Прочиать книгу", "Купить молоко", "Сходить в зал", "Сходить в бассейн" };
+		List<string> _listTask = new List<string>();
 		List<string> _completedTasks = new List<string>();
-
+		private const int MAX_COUNT_TASK = 100;
+		private const int MIN_COUNT_TASK = 1;
+		private int _countTask;
 
 		public string ListCommand { get => _listCommand; }
 		public bool Flag { get => _flag; }
@@ -57,7 +60,7 @@ namespace TGBot
 		private void Command_Start()
 		{
 			bool flag = true;
-			while (flag)
+			while (flag && _firstName == string.Empty)
 			{
 				Console.Write("Пожалуйста, введите ваше имя: ");
 				string firstName = Console.ReadLine();
@@ -73,19 +76,44 @@ namespace TGBot
 				}
 			}
 
+			if (_countTask == 0)
+				Command_ColTask();
+
 			Console.WriteLine($"Привет, {_firstName}! Чем могу помочь?");
+		}
+
+		//Количество задач 
+		private void Command_ColTask()
+		{
+			Console.WriteLine("Введите максимально допустимое количество задач");
+			string index = Console.ReadLine();
+			int value = index == string.Empty ? 0 : int.Parse(index);
+
+			if (value > 100)			
+				throw new ArgumentException("Превышено количество допустимых задач");
+			else if (value < 1)
+				throw new ArgumentException("Количество задач не может быть меньше 1");
+
+			_countTask = value;
 		}
 
 		//Добавить задачу
 		private void Command_AddTack()
-		{
+		{			
 
 			while (true)
 			{
 				Console.Write("Пожалуйста, введите описание задачи: ");
 				string task = Console.ReadLine();
+
+				if (_countTask <= _listTask.Count)
+					throw new TaskCountLimitException(_countTask);
+				if (task.Length > 100)
+					throw new TaskLengthLimitExeption(task.Length, 100);
+				ValidateString(task);
 				if (task != string.Empty)
 				{
+					Command_DuplicateTask(task);
 					_listTask.Add(task);
 					Console.WriteLine("Задача добавлена.");
 					return;
@@ -94,12 +122,29 @@ namespace TGBot
 			}
 		}
 
+		//Метод обработки задач
+		private void ValidateString(string str)
+		{
+			if (str != string.Empty && str[0] == ' ')
+				throw new ArgumentException("Задача не может начинаться со знака пробел");
+		}
+
+		//Проверка дупликата задач
+		private void Command_DuplicateTask(string task)
+		{
+			for (int i = 0; i < _listTask.Count; i++)
+			{
+				if (task == _listTask[i])
+					throw new DuplicateTaskException(task);
+			}
+		}
+
 		//Показачать список задач
 		private void Command_ShowTacks()
 		{
 			if (_listTask.Count != 0)
 			{
-				Console.WriteLine("Список задач: ");
+				Console.WriteLine($"Список задач: {_listTask.Count} : {_countTask}");
 				int count = 1;
 				foreach (var item in _listTask)
 				{
