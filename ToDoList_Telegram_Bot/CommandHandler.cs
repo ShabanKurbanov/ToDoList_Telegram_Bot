@@ -8,10 +8,10 @@ using ToDoList_Telegram_Bot;
 
 namespace TGBot
 {
-	internal class UserClass
+	internal class CommandHandler
 	{
 		private bool _flag = true;
-		private string _firstName = string.Empty;
+		private string? _firstName = string.Empty;
 		private string _listCommand = "/addtask, /showtasks, /removetask, /edittask, /taskcompleted, /showcompleted, /info, /help, /echo, /exit";
 		List<string> _listTask = new List<string>();
 		List<string> _completedTasks = new List<string>();
@@ -23,47 +23,50 @@ namespace TGBot
 		public bool Flag { get => _flag; }
 
 		//Метод обратобки команд
-		public void CommandHandler()
+		public void CommandStartApp()
 		{
-			Command_Start();
+			CommandStart();
 			Console.WriteLine($"Доступные команды: {ListCommand}");
 			while (_flag)
 			{
 				Console.Write("Введите команду: ");
-				string command = Console.ReadLine();
+				string? command = Console.ReadLine();
 
 				if (command == "/addtask")
-					Command_AddTack();
+					CommandAddTack();
 				else if (command == "/showtasks")
-					Command_ShowTacks();
+					CommandShowTacks();
 				else if (command == "/removetask")
-					Command_RemoveTask();
+					CommandRemoveTask();
 				else if (command == "/edittask")
-					Command_EditTask();
+					CommandEditTask();
 				else if (command == "/taskcompleted")
-					Command_TaskCompleted();
+					CommandTaskCompleted();
 				else if (command == "/showcompleted")
-					Command_ShowCompleted();
+					CommandShowCompleted();
 				else if (command == "/info")
-					Command_Info();
+					CommandInfo();
 				else if (command == "/help")
-					Command_Help();
+					CommandHelp();
 				else if (command == "/exit")
-					Command_Exit();
-				else if (command.Length > 4 && command.Substring(0, 5) == "/echo")
-					Command_Echo(command);
+					CommandExit();
+				else if (command?.Length > 4 && command.Substring(0, 5) == "/echo")
+					CommandEcho(command);
 				else Console.WriteLine("Команда введена не правильно.");
+
+				
+				
 			}
 		}
 
 		//Команда запуска приложения
-		private void Command_Start()
+		private void CommandStart()
 		{
 			bool flag = true;
 			while (flag && _firstName == string.Empty)
 			{
 				Console.Write("Пожалуйста, введите ваше имя: ");
-				string firstName = Console.ReadLine();
+				string? firstName = Console.ReadLine();
 
 				if (firstName == string.Empty)
 				{
@@ -77,49 +80,58 @@ namespace TGBot
 			}
 
 			if (_countTask == 0)
-				Command_ColTask();
+				CommandColTask();
 
 			Console.WriteLine($"Привет, {_firstName}! Чем могу помочь?");
 		}
 
 		//Количество задач 
-		private void Command_ColTask()
+		private void CommandColTask()
 		{
 			Console.WriteLine("Введите максимально допустимое количество задач");
-			string index = Console.ReadLine();
-			int value = index == string.Empty ? 0 : int.Parse(index);
-
-			if (value > 100)			
-				throw new ArgumentException("Превышено количество допустимых задач");
-			else if (value < 1)
-				throw new ArgumentException("Количество задач не может быть меньше 1");
-
-			_countTask = value;
+			string? index = Console.ReadLine();	
+			_countTask = ParseAndValidateInt(index, MIN_COUNT_TASK, MAX_COUNT_TASK);
 		}
 
 		//Добавить задачу
-		private void Command_AddTack()
+		private void CommandAddTack()
 		{			
 
 			while (true)
 			{
 				Console.Write("Пожалуйста, введите описание задачи: ");
-				string task = Console.ReadLine();
+				string? task = Console.ReadLine();
 
-				if (_countTask <= _listTask.Count)
-					throw new TaskCountLimitException(_countTask);
-				if (task.Length > 100)
-					throw new TaskLengthLimitExeption(task.Length, 100);
-				ValidateString(task);
-				if (task != string.Empty)
+				if (task != null && task != string.Empty)
 				{
-					Command_DuplicateTask(task);
+					if (_countTask <= _listTask.Count)
+						throw new TaskCountLimitException(_countTask);
+					else if (task.Length > 100)
+						throw new TaskLengthLimitException(task.Length, 100);
+					ValidateString(task);
+					CommandDuplicateTask(task);
 					_listTask.Add(task);
 					Console.WriteLine("Задача добавлена.");
-					return;
 				}
-				Console.WriteLine("Задача не может быть пустым!");
+				else
+				{
+					Console.WriteLine("Задача не может быть пустым!");
+				}
 			}
+		}
+
+		//Проверка конвертации строки
+		private int ParseAndValidateInt(string? str, int min, int max)
+		{
+			
+			int value = (str != null && str != string.Empty) ? int.Parse(str) : throw new ArgumentException("Строка не может быть пустым");
+
+			if (value >= max)
+				throw new ArgumentException("Превышено количество допустимых задач");
+			else if (value < min)
+				throw new ArgumentException("Количество задач не может быть меньше 1");
+
+			return value;
 		}
 
 		//Метод обработки задач
@@ -130,7 +142,7 @@ namespace TGBot
 		}
 
 		//Проверка дупликата задач
-		private void Command_DuplicateTask(string task)
+		private void CommandDuplicateTask(string task)
 		{
 			for (int i = 0; i < _listTask.Count; i++)
 			{
@@ -140,7 +152,7 @@ namespace TGBot
 		}
 
 		//Показачать список задач
-		private void Command_ShowTacks()
+		private void CommandShowTacks()
 		{
 			if (_listTask.Count != 0)
 			{
@@ -159,89 +171,69 @@ namespace TGBot
 		}
 
 		//Изменить задачу
-		private void Command_EditTask()
+		private void CommandEditTask()
 		{
-			Command_ShowTacks();
+			CommandShowTacks();
 
 			while (true)
 			{
 				Console.Write("Введите номер задачи, которую хотите изменить: ");
-				string str = Console.ReadLine();
-				int index = str == string.Empty ? 0 : int.Parse(str);
-
-				if (index <= _listTask.Count && index > 0)
+				string? str = Console.ReadLine();
+				int index = ParseAndValidateInt(str, MIN_COUNT_TASK, _listTask.Count);
+				index -= 1;
+				while (true)
 				{
-					index -= 1;
-					while (true)
+					Console.Write("Введите задачу: ");
+					string? editTasks = Console.ReadLine();
+					if (editTasks != string.Empty && editTasks != null)
 					{
-						Console.Write("Введите задачу: ");
-						string editTasks = Console.ReadLine();
-						if (editTasks != string.Empty)
-						{
-							_listTask.RemoveAt(index);
-							_listTask.Insert(index, editTasks);
-							Console.WriteLine("Задача изменена.");
-							Command_ShowTacks();
-							return;
-						}
-						Console.WriteLine("Задача не может быть пустым!");
+						_listTask.RemoveAt(index);
+						_listTask.Insert(index, editTasks);
+						Console.WriteLine("Задача изменена.");
+						CommandShowTacks();
+						return;
 					}
+					Console.WriteLine("Задача не может быть пустым!");
 				}
-
-				Console.WriteLine("Введен неправильный номер задачи.");
+				
 			}
 		}
 
 		//Удалить задачу
-		private void Command_RemoveTask()
+		private void CommandRemoveTask()
 		{
-			Command_ShowTacks();
-			while (true)
-			{
-				Console.Write("Введите номер задачи которую хотите удалить: ");
+			CommandShowTacks();
+			Console.Write("Введите номер задачи которую хотите удалить: ");
 
-				string str = Console.ReadLine();
-				int index = str == string.Empty ? 0 : int.Parse(str);
+			string? str = Console.ReadLine();
+			int index = ParseAndValidateInt(str, MIN_COUNT_TASK, _listTask.Count);
 
-				if (index <= _listTask.Count && index > 0)
-				{
-					index--;
-					string task = _listTask[index];
-					_listTask.RemoveAt(index);
-					Console.WriteLine($"Задача: \"{task}\" удалена");
-					return;
-				}
-				Console.WriteLine("Введен не корректный номер задачи.");
-			}
+			index--;
+			string? task = _listTask[index];
+			_listTask.RemoveAt(index);
+			Console.WriteLine($"Задача: \"{task}\" удалена");
+			
 		}
 
 		//Задача выполнена
-		private void Command_TaskCompleted()
+		private void CommandTaskCompleted()
 		{
-			Command_ShowTacks();
-			while (true)
-			{
-				Console.Write("Введите номер выполненной задачи: ");
+			CommandShowTacks();
+			Console.Write("Введите номер выполненной задачи: ");
 
-				string str = Console.ReadLine();
-				int index = str == string.Empty ? 0 : int.Parse(str);
-
-				if (index <= _listTask.Count && index > 0)
-				{
-					index--;
-					string task = _listTask[index];
-					_listTask.RemoveAt(index);
-					_completedTasks.Add(task);
-					Console.WriteLine($"Задача: \"{task}\" выполнена.");
-					return;
-				}
-				Console.WriteLine("Введен не корректный номер задачи.");
-			}
-
+			string? str = Console.ReadLine();
+			int index = ParseAndValidateInt(str, MIN_COUNT_TASK, _listTask.Count);
+				
+			index--;
+			string? task = _listTask[index];
+			_listTask.RemoveAt(index);
+			_completedTasks.Add(task);
+			Console.WriteLine($"Задача: \"{task}\" выполнена.");
+			
 		}
 
 		//Выполненные задачи
-		private void Command_ShowCompleted()
+		private void CommandShowCompleted()
 		{
 			if (_completedTasks.Count != 0)
 			{
@@ -260,7 +252,7 @@ namespace TGBot
 		}
 
 		//Информация о командах
-		private void Command_Help()
+		private void CommandHelp()
 		{
 			Console.WriteLine("Перед вами Telegram bot для работы необходимо вести команду /start и ввести имя");
 			Console.WriteLine("\t -/start - запуск Telegram bot");
@@ -277,22 +269,22 @@ namespace TGBot
 		}
 
 		//Информация о Программе
-		private void Command_Info()
+		private void CommandInfo()
 		{
-			Version vetsion = Assembly.GetExecutingAssembly().GetName().Version;
+			Version? vetsion = Assembly.GetExecutingAssembly().GetName().Version;
 			DateTime creationTgB = File.GetCreationTime(Assembly.GetExecutingAssembly().Location);
 			Console.WriteLine($"Версия программы: {vetsion}");
 			Console.WriteLine($"Дата создания: {creationTgB}");
 		}
 
 		//Выход из Приложения
-		private void Command_Exit()
+		private void CommandExit()
 		{
 			_flag = false;
 		}
 
 		//Вывод введенных пользователем данных
-		private void Command_Echo(string command)
+		private void CommandEcho(string command)
 		{
 			Console.WriteLine(command.Substring(5));
 		}

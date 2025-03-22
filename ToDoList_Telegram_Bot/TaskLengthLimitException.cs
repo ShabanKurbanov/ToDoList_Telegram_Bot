@@ -6,9 +6,9 @@ using System.Threading.Tasks;
 
 namespace ToDoList_Telegram_Bot
 {
-    class TaskLengthLimitExeption : Exception
+    class TaskLengthLimitException : Exception
     {
-        public TaskLengthLimitExeption(int taskLendth, int taskLengthLimit) : 
+        public TaskLengthLimitException(int taskLendth, int taskLengthLimit) : 
             base($"Длина задачи '{taskLendth}' превышает максимально допустимое значение {taskLengthLimit}"){}
     }
 }

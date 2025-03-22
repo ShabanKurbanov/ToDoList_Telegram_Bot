@@ -8,7 +8,7 @@ namespace TGBot
 		private static string commandStart = "Пожалуйста, введите команду /start!";
 		static void Main(string[] args)
 		{
-			UserClass instance = new UserClass();
+			CommandHandler instance = new CommandHandler();
 
 			Console.WriteLine($"Добро пожаловать! Для запуска приложения введите команду: /start");
 
@@ -16,10 +16,10 @@ namespace TGBot
 			{
 				try
 				{
-					string command = Console.ReadLine();
+					string? command = Console.ReadLine();
 					if (command != null && command != string.Empty && command == "/start")
 					{
-						instance.CommandHandler();
+						instance.CommandStartApp();
 						flag = false;
 					}
 					else
@@ -38,13 +38,20 @@ namespace TGBot
 					Console.WriteLine(e.Message);
 					Console.WriteLine(commandStart);
 				}
-				catch (TaskLengthLimitExeption e)
+				catch (TaskLengthLimitException e)
 				{
 					Console.WriteLine(e.Message);
 					Console.WriteLine(commandStart);
 				}
 				catch(DuplicateTaskException e)
 				{
+					Console.WriteLine(e.Message);
+					Console.WriteLine(commandStart);
+				}
+
+				catch(Exception e)
+				{
+					Console.Write("Не корректный ввод данных: ");
 					Console.WriteLine(e.Message);
 					Console.WriteLine(commandStart);
 				}
