@@ -31,30 +31,43 @@ namespace TGBot
 			{
 				Console.Write("Введите команду: ");
 				string? command = Console.ReadLine();
-
-				if (command == "/addtask")
-					CommandAddTack();
-				else if (command == "/showtasks")
-					CommandShowTacks();
-				else if (command == "/removetask")
-					CommandRemoveTask();
-				else if (command == "/edittask")
-					CommandEditTask();
-				else if (command == "/taskcompleted")
-					CommandTaskCompleted();
-				else if (command == "/showcompleted")
-					CommandShowCompleted();
-				else if (command == "/info")
-					CommandInfo();
-				else if (command == "/help")
-					CommandHelp();
-				else if (command == "/exit")
-					CommandExit();
-				else if (command?.Length > 4 && command.Substring(0, 5) == "/echo")
-					CommandEcho(command);
-				else Console.WriteLine("Команда введена не правильно.");
-
-				
+				if(command != null)
+				switch (command)
+				{
+					case "/addtask":
+						CommandAddTack();
+						break;
+					case "/showtasks":
+						CommandShowTacks();
+						break;
+					case "/removetask":
+						CommandRemoveTask();
+						break;
+					case "/edittask":
+						CommandEditTask();
+						break;
+					case "/taskcompleted":
+						CommandTaskCompleted();
+						break;
+					case "/showcompleted":
+						CommandShowCompleted();
+						break;
+					case "/info":
+						CommandInfo();
+						break;
+					case "/help":
+						CommandHelp();
+						break;
+					case "/exit":
+						CommandExit();
+						break;
+					case var _ when command.StartsWith("/echo"):
+							CommandEcho(command);
+						break;
+					default:
+						Console.WriteLine("Команда введена не правильно.");
+						break;
+				}
 				
 			}
 		}
@@ -112,6 +125,7 @@ namespace TGBot
 					CommandDuplicateTask(task);
 					_listTask.Add(task);
 					Console.WriteLine("Задача добавлена.");
+					return;
 				}
 				else
 				{
