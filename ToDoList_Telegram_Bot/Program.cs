@@ -1,29 +1,61 @@
 ﻿using System.Reflection;
+using ToDoList_Telegram_Bot;
 namespace TGBot
 {
 	internal class Program
 	{
 		private static bool flag = true;
-
+		private static string commandStart = "Пожалуйста, введите команду /start!";
 		static void Main(string[] args)
 		{
-			UserClass instance = new UserClass();
+			CommandHandler instance = new CommandHandler();
 
 			Console.WriteLine($"Добро пожаловать! Для запуска приложения введите команду: /start");
 
 			while (flag)
 			{
-				string command = Console.ReadLine();
-				if (command != null && command != string.Empty && command == "/start")
+				try
 				{
-					instance.CommandHandler();
-					flag = false;
+					string? command = Console.ReadLine();
+					if (command != null && command != string.Empty && command == "/start")
+					{
+						instance.CommandStartApp();
+						flag = false;
+					}
+					else
+					{
+						Console.WriteLine(commandStart);
+					}
 				}
-				else
+				catch (ArgumentException e)
 				{
-					Console.WriteLine("Пожалуйста, введите команду!");
+					Console.WriteLine(e.Message);
+					Console.WriteLine(commandStart);
 				}
 
+				catch(TaskCountLimitException e)
+				{
+					Console.WriteLine(e.Message);
+					Console.WriteLine(commandStart);
+				}
+				catch (TaskLengthLimitException e)
+				{
+					Console.WriteLine(e.Message);
+					Console.WriteLine(commandStart);
+				}
+				catch(DuplicateTaskException e)
+				{
+					Console.WriteLine(e.Message);
+					Console.WriteLine(commandStart);
+				}
+
+				catch(Exception e)
+				{
+					Console.Write("Не корректный ввод данных: ");
+					Console.WriteLine(e.Message);
+					Console.WriteLine(commandStart);
+				}
+				
 			}
 		}
 	}
