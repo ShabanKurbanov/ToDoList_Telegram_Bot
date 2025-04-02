@@ -1,5 +1,5 @@
 ﻿using System.Reflection;
-using ToDoList_Telegram_Bot;
+using ToDoList_Telegram_Bot.Exceptions;
 namespace TGBot
 {
 	internal class Program

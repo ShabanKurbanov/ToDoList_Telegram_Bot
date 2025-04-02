@@ -4,11 +4,12 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
-using ToDoList_Telegram_Bot;
+using ToDoList_Telegram_Bot.Interface;
+using ToDoList_Telegram_Bot.Types;
 
-namespace TGBot
+namespace ToDoList_Telegram_Bot
 {
-	internal class CommandHandler
+	class UpdateHandler : IUpdateHandler
 	{
 		private bool _flag = true;
 		private string? _firstName = string.Empty;
@@ -22,8 +23,9 @@ namespace TGBot
 		public string ListCommand { get => _listCommand; }
 		public bool Flag { get => _flag; }
 
+
 		//Метод обратобки команд
-		public void CommandStartApp()
+		public void HandleUpdateAsync(ITelegramBotClient botClient, Update update)
 		{
 			CommandStart();
 			Console.WriteLine($"Доступные команды: {ListCommand}");
@@ -31,44 +33,44 @@ namespace TGBot
 			{
 				Console.Write("Введите команду: ");
 				string? command = Console.ReadLine();
-				if(command != null)
-				switch (command)
-				{
-					case "/addtask":
-						CommandAddTack();
-						break;
-					case "/showtasks":
-						CommandShowTacks();
-						break;
-					case "/removetask":
-						CommandRemoveTask();
-						break;
-					case "/edittask":
-						CommandEditTask();
-						break;
-					case "/taskcompleted":
-						CommandTaskCompleted();
-						break;
-					case "/showcompleted":
-						CommandShowCompleted();
-						break;
-					case "/info":
-						CommandInfo();
-						break;
-					case "/help":
-						CommandHelp();
-						break;
-					case "/exit":
-						CommandExit();
-						break;
-					case var _ when command.StartsWith("/echo"):
+				if (command != null)
+					switch (command)
+					{
+						case "/addtask":
+							CommandAddTack();
+							break;
+						case "/showtasks":
+							CommandShowTacks();
+							break;
+						case "/removetask":
+							CommandRemoveTask();
+							break;
+						case "/edittask":
+							CommandEditTask();
+							break;
+						case "/taskcompleted":
+							CommandTaskCompleted();
+							break;
+						case "/showcompleted":
+							CommandShowCompleted();
+							break;
+						case "/info":
+							CommandInfo();
+							break;
+						case "/help":
+							CommandHelp();
+							break;
+						case "/exit":
+							CommandExit();
+							break;
+						case var _ when command.StartsWith("/echo"):
 							CommandEcho(command);
-						break;
-					default:
-						Console.WriteLine("Команда введена не правильно.");
-						break;
-				}
-				
+							break;
+						default:
+							Console.WriteLine("Команда введена не правильно.");
+							break;
+					}
+
 			}
 		}
 
@@ -102,13 +104,13 @@ namespace TGBot
 		private void CommandColTask()
 		{
 			Console.WriteLine("Введите максимально допустимое количество задач");
-			string? index = Console.ReadLine();	
+			string? index = Console.ReadLine();
 			_countTask = ParseAndValidateInt(index, MIN_COUNT_TASK, MAX_COUNT_TASK);
 		}
 
 		//Добавить задачу
 		private void CommandAddTack()
-		{			
+		{
 
 			while (true)
 			{
@@ -137,7 +139,7 @@ namespace TGBot
 		//Проверка конвертации строки
 		private int ParseAndValidateInt(string? str, int min, int max)
 		{
-			
+
 			int value = (str != null && str != string.Empty) ? int.Parse(str) : throw new ArgumentException("Строка не может быть пустым");
 
 			if (value >= max)
@@ -209,7 +211,7 @@ namespace TGBot
 					}
 					Console.WriteLine("Задача не может быть пустым!");
 				}
-				
+
 			}
 		}
 
@@ -226,7 +228,7 @@ namespace TGBot
 			string? task = _listTask[index];
 			_listTask.RemoveAt(index);
 			Console.WriteLine($"Задача: \"{task}\" удалена");
-			
+
 		}
 
 		//Задача выполнена
@@ -237,13 +239,13 @@ namespace TGBot
 
 			string? str = Console.ReadLine();
 			int index = ParseAndValidateInt(str, MIN_COUNT_TASK, _listTask.Count);
-				
+
 			index--;
 			string? task = _listTask[index];
 			_listTask.RemoveAt(index);
 			_completedTasks.Add(task);
 			Console.WriteLine($"Задача: \"{task}\" выполнена.");
-			
+
 		}
 
 		//Выполненные задачи
