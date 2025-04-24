@@ -14,10 +14,8 @@ namespace TGBot
 			ITelegramBotClient telegramBotClient = new ConsoleBotClient();
 			
 				try
-				{
-					
-						telegramBotClient.StartReceiving(handler);
-					
+				{					
+						telegramBotClient.StartReceiving(handler);					
 				}
 				
 
