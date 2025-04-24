@@ -6,9 +6,9 @@ using System.Threading.Tasks;
 
 namespace ToDoList_Telegram_Bot.Types
 {
-    class Update
+    enum ToDoItemState
     {
-        public Message? Message { get; set; }
-
+        Active,
+        Completed
     }
 }

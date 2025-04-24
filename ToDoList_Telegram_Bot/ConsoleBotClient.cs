@@ -20,7 +20,7 @@ namespace ToDoList_Telegram_Bot
 		}
 
 		public void SendMessage(Chat chat, string text)
-		{
+		{ 
 			ArgumentNullException.ThrowIfNull(chat, nameof(chat));
 			ArgumentNullException.ThrowIfNull(text, nameof(text));
 			if (_chat.Id != chat.Id)

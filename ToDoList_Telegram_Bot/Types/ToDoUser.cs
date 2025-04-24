@@ -6,13 +6,11 @@ using System.Threading.Tasks;
 
 namespace ToDoList_Telegram_Bot.Types
 {
-    class User
+    class ToDoUser
     {
-        public long Id { get; set; }
-		public string? Username { get; internal set; }
         public Guid UserId { get; set; }
-        public long TelegramUserId { get; set; }
+        public long? TelegramUserId { get; set; }
         public string? TelegramUserName { get; set; }
         public DateTime RegisteredAt { get; set; }
-	}
+    }
 }

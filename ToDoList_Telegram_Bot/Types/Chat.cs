@@ -8,6 +8,6 @@ namespace ToDoList_Telegram_Bot.Types
 {
     class Chat
     {
-        public long Id { get; set; }
+        public long? Id { get; set; }
     }
 }
