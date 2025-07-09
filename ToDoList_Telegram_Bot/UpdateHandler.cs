@@ -1,15 +1,15 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using Otus.ToDoList.ConsoleBot;
+using Otus.ToDoList.ConsoleBot.Types;
 using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
-using ToDoList_Telegram_Bot;
 
-namespace TGBot
+namespace ToDoList_Telegram_Bot
 {
-	internal class CommandHandler
+	class UpdateHandler : IUpdateHandler
 	{
+		IUserService? _userService;
+		private  Chat? _chat;
+		private  User? _user;
+
 		private bool _flag = true;
 		private string? _firstName = string.Empty;
 		private string _listCommand = "/addtask, /showtasks, /removetask, /edittask, /taskcompleted, /showcompleted, /info, /help, /echo, /exit";
@@ -23,92 +23,122 @@ namespace TGBot
 		public bool Flag { get => _flag; }
 
 		//Метод обратобки команд
-		public void CommandStartApp()
+		public void HandleUpdateAsync(ITelegramBotClient botClient, Update update)
 		{
+			//botClient.SendMessage(update.Message.Chat, $"Получил '{update.Message.Text}'");
+
+			_chat = update.Message.Chat;
+			_user = update.Message.From;
+
 			CommandStart();
-			Console.WriteLine($"Доступные команды: {ListCommand}");
+
+			botClient.SendMessage(update.Message.Chat, $"Доступные команды: {ListCommand}");
 			while (_flag)
 			{
-				Console.Write("Введите команду: ");
-				string? command = Console.ReadLine();
-				if(command != null)
-				switch (command)
+				try
 				{
-					case "/addtask":
-						CommandAddTack();
-						break;
-					case "/showtasks":
-						CommandShowTacks();
-						break;
-					case "/removetask":
-						CommandRemoveTask();
-						break;
-					case "/edittask":
-						CommandEditTask();
-						break;
-					case "/taskcompleted":
-						CommandTaskCompleted();
-						break;
-					case "/showcompleted":
-						CommandShowCompleted();
-						break;
-					case "/info":
-						CommandInfo();
-						break;
-					case "/help":
-						CommandHelp();
-						break;
-					case "/exit":
-						CommandExit();
-						break;
-					case var _ when command.StartsWith("/echo"):
-							CommandEcho(command);
-						break;
-					default:
-						Console.WriteLine("Команда введена не правильно.");
-						break;
+					botClient.SendMessage(update.Message.Chat, "Введите команду: ");
+					string? command = Console.ReadLine();
+					if (command != null)
+						switch (command)
+						{
+							case "/addtask":
+								CommandAddTack();
+								break;
+							case "/showtasks":
+								CommandShowTacks();
+								break;
+							case "/removetask":
+								CommandRemoveTask();
+								break;
+							case "/edittask":
+								CommandEditTask();
+								break;
+							case "/taskcompleted":
+								CommandTaskCompleted();
+								break;
+							case "/showcompleted":
+								CommandShowCompleted();
+								break;
+							case "/info":
+								CommandInfo();
+								break;
+							case "/help":
+								CommandHelp();
+								break;
+							case "/exit":
+								CommandExit();
+								break;
+							//case var _ when command.StartsWith("/echo"):
+							//	CommandEcho(command);
+							//	break;
+							default:
+								botClient.SendMessage (update.Message.Chat, "Команда введена не правильно.");
+								break;
+						}
 				}
-				
+
+				catch (ArgumentException e)
+				{
+					botClient.SendMessage(update.Message.Chat, e.Message);
+				}
+
+				catch (TaskCountLimitException e)
+				{
+					botClient.SendMessage(update.Message.Chat, e.Message);
+				}
+				catch (TaskLengthLimitException e)
+				{
+					botClient.SendMessage(update.Message.Chat, e.Message);
+				}
+				catch (DuplicateTaskException e)
+				{
+					botClient.SendMessage(update.Message.Chat, e.Message);
+				}
+
 			}
 		}
 
 		//Команда запуска приложения
 		private void CommandStart()
 		{
-			bool flag = true;
-			while (flag && _firstName == string.Empty)
-			{
-				Console.Write("Пожалуйста, введите ваше имя: ");
-				string? firstName = Console.ReadLine();
 
-				if (firstName == string.Empty)
-				{
-					Console.WriteLine("Имя не должно быть пустым! ");
-				}
-				else
-				{
-					_firstName = firstName;
-					flag = false;
-				}
-			}
+			_userService = new UserService();
 
-			if (_countTask == 0)
-				CommandColTask();
+			//bool flag = true;
+			//while (flag && _firstName == string.Empty)
+			//{
+			//	Console.Write("Пожалуйста, введите ваше имя: ");
+			//	string? firstName = Console.ReadLine();
 
-			Console.WriteLine($"Привет, {_firstName}! Чем могу помочь?");
+			//	if (firstName == string.Empty)
+			//	{
+			//		Console.WriteLine("Имя не должно быть пустым! ");
+			//	}
+			//	else
+			//	{
+			//		_firstName = firstName;
+			//		flag = false;
+			//	}
+			//}
+
+			//if (_countTask == 0)
+			//	CommandColTask();
+
+			//Console.WriteLine($"Привет, {_firstName}! Чем могу помочь?");
 		}
 
 		//Количество задач 
 		private void CommandColTask()
 		{
 			Console.WriteLine("Введите максимально допустимое количество задач");
-			string? index = Console.ReadLine();	
+			string? index = Console.ReadLine();
 			_countTask = ParseAndValidateInt(index, MIN_COUNT_TASK, MAX_COUNT_TASK);
 		}
 
 		//Добавить задачу
 		private void CommandAddTack()
-		{			
+		{
 
 			while (true)
 			{
@@ -137,7 +167,7 @@ namespace TGBot
 		//Проверка конвертации строки
 		private int ParseAndValidateInt(string? str, int min, int max)
 		{
-			
+
 			int value = (str != null && str != string.Empty) ? int.Parse(str) : throw new ArgumentException("Строка не может быть пустым");
 
 			if (value >= max)
@@ -209,7 +239,7 @@ namespace TGBot
 					}
 					Console.WriteLine("Задача не может быть пустым!");
 				}
-				
+
 			}
 		}
 
@@ -226,7 +256,7 @@ namespace TGBot
 			string? task = _listTask[index];
 			_listTask.RemoveAt(index);
 			Console.WriteLine($"Задача: \"{task}\" удалена");
-			
+
 		}
 
 		//Задача выполнена
@@ -237,13 +267,13 @@ namespace TGBot
 
 			string? str = Console.ReadLine();
 			int index = ParseAndValidateInt(str, MIN_COUNT_TASK, _listTask.Count);
-				
+
 			index--;
 			string? task = _listTask[index];
 			_listTask.RemoveAt(index);
 			_completedTasks.Add(task);
 			Console.WriteLine($"Задача: \"{task}\" выполнена.");
-			
+
 		}
 
 		//Выполненные задачи
