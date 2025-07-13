@@ -197,11 +197,11 @@ namespace ToDoList_Telegram_Bot
 		{
 			if (_listTask.Count != 0)
 			{
-				Console.WriteLine($"Список задач: {_listTask.Count} : {_countTask}");
+				_botClient!.SendMessage(_update!.Message.Chat, $"Список задач: {_listTask.Count} : {_countTask}");
 				int count = 1;
 				foreach (var item in _listTask)
 				{
-					Console.WriteLine($"\t{count}) - {item}");
+					_botClient!.SendMessage(_update!.Message.Chat, $"\t{count}) - {item}");
 					count++;
 				}
 			}
@@ -252,7 +252,7 @@ namespace ToDoList_Telegram_Bot
 			index--;
 			string? task = _listTask[index];
 			_listTask.RemoveAt(index);
-			Console.WriteLine($"Задача: \"{task}\" удалена");
+			_botClient!.SendMessage(_update!.Message.Chat, $"Задача: \"{task}\" удалена");
 
 		}
 
@@ -269,7 +269,7 @@ namespace ToDoList_Telegram_Bot
 			string? task = _listTask[index];
 			_listTask.RemoveAt(index);
 			_completedTasks.Add(task);
-			Console.WriteLine($"Задача: \"{task}\" выполнена.");
+			_botClient!.SendMessage(_update!.Message.Chat, $"Задача: \"{task}\" выполнена.");
 
 		}
 
@@ -282,7 +282,7 @@ namespace ToDoList_Telegram_Bot
 				int count = 1;
 				foreach (var item in _completedTasks)
 				{
-					Console.WriteLine($"\t{count}) - {item}");
+					_botClient!.SendMessage(_update!.Message.Chat, $"\t{count}) - {item}");
 					count++;
 				}
 			}
