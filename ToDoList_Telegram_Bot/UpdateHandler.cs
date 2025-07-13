@@ -7,8 +7,8 @@ namespace ToDoList_Telegram_Bot
 	class UpdateHandler : IUpdateHandler
 	{
 		IUserService? _userService;
-		private  Chat? _chat;
-		private  User? _user;
+		ITelegramBotClient? _botClient;
+		Update? _update;
 
 		private bool _flag = true;
 		private string? _firstName = string.Empty;
@@ -25,10 +25,10 @@ namespace ToDoList_Telegram_Bot
 		//Метод обратобки команд
 		public void HandleUpdateAsync(ITelegramBotClient botClient, Update update)
 		{
-			//botClient.SendMessage(update.Message.Chat, $"Получил '{update.Message.Text}'");
+			botClient.SendMessage(update.Message.Chat, $"Получил '{update.Message.Text}'");
 
-			_chat = update.Message.Chat;
-			_user = update.Message.From;
+			_botClient = botClient;
+			_update = update;
 
 			CommandStart();
 
@@ -69,9 +69,6 @@ namespace ToDoList_Telegram_Bot
 							case "/exit":
 								CommandExit();
 								break;
-							//case var _ when command.StartsWith("/echo"):
-							//	CommandEcho(command);
-							//	break;
 							default:
 								botClient.SendMessage (update.Message.Chat, "Команда введена не правильно.");
 								break;
@@ -131,7 +128,7 @@ namespace ToDoList_Telegram_Bot
 		//Количество задач 
 		private void CommandColTask()
 		{
-			Console.WriteLine("Введите максимально допустимое количество задач");
+			_botClient!.SendMessage(_update!.Message.Chat, "Введите максимально допустимое количество задач");
 			string? index = Console.ReadLine();
 			_countTask = ParseAndValidateInt(index, MIN_COUNT_TASK, MAX_COUNT_TASK);
 		}
@@ -142,7 +139,7 @@ namespace ToDoList_Telegram_Bot
 
 			while (true)
 			{
-				Console.Write("Пожалуйста, введите описание задачи: ");
+				_botClient!.SendMessage(_update!.Message.Chat, "Пожалуйста, введите описание задачи: ");
 				string? task = Console.ReadLine();
 
 				if (task != null && task != string.Empty)
@@ -154,12 +151,12 @@ namespace ToDoList_Telegram_Bot
 					ValidateString(task);
 					CommandDuplicateTask(task);
 					_listTask.Add(task);
-					Console.WriteLine("Задача добавлена.");
+					_botClient!.SendMessage(_update!.Message.Chat, "Задача добавлена.");
 					return;
 				}
 				else
 				{
-					Console.WriteLine("Задача не может быть пустым!");
+					_botClient!.SendMessage(_update!.Message.Chat, "Задача не может быть пустым!");
 				}
 			}
 		}
@@ -200,17 +197,17 @@ namespace ToDoList_Telegram_Bot
 		{
 			if (_listTask.Count != 0)
 			{
-				Console.WriteLine($"Список задач: {_listTask.Count} : {_countTask}");
+				_botClient!.SendMessage(_update!.Message.Chat, $"Список задач: {_listTask.Count} : {_countTask}");
 				int count = 1;
 				foreach (var item in _listTask)
 				{
-					Console.WriteLine($"\t{count}) - {item}");
+					_botClient!.SendMessage(_update!.Message.Chat, $"\t{count}) - {item}");
 					count++;
 				}
 			}
 			else
 			{
-				Console.WriteLine("Список задач пуст!");
+				_botClient!.SendMessage(_update!.Message.Chat, "Список задач пуст!");
 			}
 		}
 
@@ -221,23 +218,23 @@ namespace ToDoList_Telegram_Bot
 
 			while (true)
 			{
-				Console.Write("Введите номер задачи, которую хотите изменить: ");
+				_botClient!.SendMessage(_update!.Message.Chat, "Введите номер задачи, которую хотите изменить: ");
 				string? str = Console.ReadLine();
 				int index = ParseAndValidateInt(str, MIN_COUNT_TASK, _listTask.Count);
 				index -= 1;
 				while (true)
 				{
-					Console.Write("Введите задачу: ");
+					_botClient!.SendMessage(_update!.Message.Chat, "Введите задачу: ");
 					string? editTasks = Console.ReadLine();
 					if (editTasks != string.Empty && editTasks != null)
 					{
 						_listTask.RemoveAt(index);
 						_listTask.Insert(index, editTasks);
-						Console.WriteLine("Задача изменена.");
+						_botClient!.SendMessage(_update!.Message.Chat, "Задача изменена.");
 						CommandShowTacks();
 						return;
 					}
-					Console.WriteLine("Задача не может быть пустым!");
+					_botClient!.SendMessage(_update!.Message.Chat, "Задача не может быть пустым!");
 				}
 
 			}
@@ -247,7 +244,7 @@ namespace ToDoList_Telegram_Bot
 		private void CommandRemoveTask()
 		{
 			CommandShowTacks();
-			Console.Write("Введите номер задачи которую хотите удалить: ");
+			_botClient!.SendMessage(_update!.Message.Chat, "Введите номер задачи которую хотите удалить: ");
 
 			string? str = Console.ReadLine();
 			int index = ParseAndValidateInt(str, MIN_COUNT_TASK, _listTask.Count);
@@ -255,7 +252,7 @@ namespace ToDoList_Telegram_Bot
 			index--;
 			string? task = _listTask[index];
 			_listTask.RemoveAt(index);
-			Console.WriteLine($"Задача: \"{task}\" удалена");
+			_botClient!.SendMessage(_update!.Message.Chat, $"Задача: \"{task}\" удалена");
 
 		}
 
@@ -263,7 +260,7 @@ namespace ToDoList_Telegram_Bot
 		private void CommandTaskCompleted()
 		{
 			CommandShowTacks();
-			Console.Write("Введите номер выполненной задачи: ");
+			_botClient!.SendMessage(_update!.Message.Chat, "Введите номер выполненной задачи: ");
 
 			string? str = Console.ReadLine();
 			int index = ParseAndValidateInt(str, MIN_COUNT_TASK, _listTask.Count);
@@ -272,7 +269,7 @@ namespace ToDoList_Telegram_Bot
 			string? task = _listTask[index];
 			_listTask.RemoveAt(index);
 			_completedTasks.Add(task);
-			Console.WriteLine($"Задача: \"{task}\" выполнена.");
+			_botClient!.SendMessage(_update!.Message.Chat, $"Задача: \"{task}\" выполнена.");
 
 		}
 
@@ -281,34 +278,34 @@ namespace ToDoList_Telegram_Bot
 		{
 			if (_completedTasks.Count != 0)
 			{
-				Console.WriteLine("Список выполненных задач: ");
+				_botClient!.SendMessage(_update!.Message.Chat, "Список выполненных задач: ");
 				int count = 1;
 				foreach (var item in _completedTasks)
 				{
-					Console.WriteLine($"\t{count}) - {item}");
+					_botClient!.SendMessage(_update!.Message.Chat, $"\t{count}) - {item}");
 					count++;
 				}
 			}
 			else
 			{
-				Console.WriteLine("Список задач пуст!");
+				_botClient!.SendMessage(_update!.Message.Chat, "Список задач пуст!");
 			}
 		}
 
 		//Информация о командах
 		private void CommandHelp()
 		{
-			Console.WriteLine("Перед вами Telegram bot для работы необходимо вести команду /start и ввести имя");
-			Console.WriteLine("\t -/start - запуск Telegram bot");
-			Console.WriteLine("\t -/addtask - добавить задачу");
-			Console.WriteLine("\t -/showtasks - показать задачи");
-			Console.WriteLine("\t -/removetask - удалить задачу");
-			Console.WriteLine("\t -/edittask - изменить задачу");
-			Console.WriteLine("\t -/taskcompleted - задача выполнена");
-			Console.WriteLine("\t -/showcompleted - показать выполненные задачи");
-			Console.WriteLine("\t -/info - узнать инофрмацию о Telegram bot");
-			Console.WriteLine("\t -/exit - выйти из Telegram bot");
-			Console.WriteLine("\t -/echo - вывод введенных данных");
+			_botClient!.SendMessage(_update!.Message.Chat, "Перед вами Telegram bot для работы необходимо вести команду /start и ввести имя");
+			_botClient!.SendMessage(_update!.Message.Chat, "\t -/start - запуск Telegram bot");
+			_botClient!.SendMessage(_update!.Message.Chat, "\t -/addtask - добавить задачу");
+			_botClient!.SendMessage(_update!.Message.Chat, "\t -/showtasks - показать задачи");
+			_botClient!.SendMessage(_update!.Message.Chat, "\t -/removetask - удалить задачу");
+			_botClient!.SendMessage(_update!.Message.Chat, "\t -/edittask - изменить задачу");
+			_botClient!.SendMessage(_update!.Message.Chat, "\t -/taskcompleted - задача выполнена");
+			_botClient!.SendMessage(_update!.Message.Chat, "\t -/showcompleted - показать выполненные задачи");
+			_botClient!.SendMessage(_update!.Message.Chat, "\t -/info - узнать инофрмацию о Telegram bot");
+			_botClient!.SendMessage(_update!.Message.Chat, "\t -/exit - выйти из Telegram bot");
+			_botClient!.SendMessage(_update!.Message.Chat, "\t -/echo - вывод введенных данных");
 
 		}
 
@@ -317,8 +314,8 @@ namespace ToDoList_Telegram_Bot
 		{
 			Version? vetsion = Assembly.GetExecutingAssembly().GetName().Version;
 			DateTime creationTgB = File.GetCreationTime(Assembly.GetExecutingAssembly().Location);
-			Console.WriteLine($"Версия программы: {vetsion}");
-			Console.WriteLine($"Дата создания: {creationTgB}");
+			_botClient!.SendMessage(_update!.Message.Chat, $"Версия программы: {vetsion}");
+			_botClient!.SendMessage(_update!.Message.Chat, $"Дата создания: {creationTgB}");
 		}
 
 		//Выход из Приложения
@@ -327,10 +324,5 @@ namespace ToDoList_Telegram_Bot
 			_flag = false;
 		}
 
-		//Вывод введенных пользователем данных
-		private void CommandEcho(string command)
-		{
-			Console.WriteLine(command.Substring(5));
-		}
 	}
 }
