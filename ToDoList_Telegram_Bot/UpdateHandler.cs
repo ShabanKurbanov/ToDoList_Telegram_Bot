@@ -25,7 +25,7 @@ namespace ToDoList_Telegram_Bot
 		//Метод обратобки команд
 		public void HandleUpdateAsync(ITelegramBotClient botClient, Update update)
 		{
-			//botClient.SendMessage(update.Message.Chat, $"Получил '{update.Message.Text}'");
+			botClient.SendMessage(update.Message.Chat, $"Получил '{update.Message.Text}'");
 
 			_botClient = botClient;
 			_update = update;
