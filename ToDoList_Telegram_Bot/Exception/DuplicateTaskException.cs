@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace ToDoList_Telegram_Bot
+namespace ToDoList_Telegram_Bot.Exception
 {
-    class DuplicateTaskException : Exception 
+    class DuplicateTaskException : IOException 
     {
         public DuplicateTaskException(string task) :base($"Задача '{task}' уже существует") { }
     }

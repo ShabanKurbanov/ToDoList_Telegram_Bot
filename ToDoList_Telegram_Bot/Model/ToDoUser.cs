@@ -4,13 +4,13 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace ToDoList_Telegram_Bot
+namespace ToDoList_Telegram_Bot.Model
 {
     class ToDoUser
     {
-        public Guid UserId { get; set; }
-        public long TelegramUserId { get; set; }
+        public Guid? UserId { get; set; }
+        public long? TelegramUserId { get; set; }
         public string? TelegramUserName { get; set; }
-        public DateTime RegisteredAt { get; set; }
+        public DateTime? RegisteredAt { get; set; }
     }
 }

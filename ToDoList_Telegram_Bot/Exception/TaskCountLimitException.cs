@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace ToDoList_Telegram_Bot
+namespace ToDoList_Telegram_Bot.Exception
 {
-    class TaskCountLimitException : Exception
+    class TaskCountLimitException : IOException
     {
         public TaskCountLimitException(int taskCountLimit) : base($"Превышено максимальное количество задач равное {taskCountLimit}")
         {
